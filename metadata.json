@@ -1,0 +1,6 @@
+{
+  "name": "Advocacia Helfstein",
+  "description": "Landing Page de Alta Conversão para Advocacia Helfstein - Dr. Marcelo Vieira Helfstein da Silva (OAB/SP: 489.578)",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
