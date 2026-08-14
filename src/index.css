@@ -18,6 +18,7 @@
     background-color: #02050a;
     color: #ffffff;
     overflow-x: hidden;
+    scroll-behavior: smooth;
   }
 
   h1, h2, h3, h4, .font-serif-title {
@@ -26,6 +27,23 @@
 
   .font-cinzel {
     font-family: 'Cinzel', serif;
+  }
+}
+
+@keyframes shimmer {
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+@keyframes pulseGlow {
+  0%, 100% {
+    opacity: 0.4;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.8;
+    transform: scale(1.05);
   }
 }
 
@@ -52,7 +70,7 @@
   position: relative;
   background-color: #080d17;
   border: 1px solid rgba(197, 160, 89, 0.2);
-  transition: all 0.25s ease-in-out;
+  transition: border-color 0.2s cubic-bezier(0.16, 1, 0.3, 1), background-color 0.2s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.2s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .sleek-card:hover {

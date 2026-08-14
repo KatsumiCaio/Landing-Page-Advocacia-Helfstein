@@ -1,14 +1,20 @@
 import React from 'react';
-import { Phone, Mail, MessageCircle } from 'lucide-react';
+import { Phone, Mail, MessageCircle, ArrowUp } from 'lucide-react';
+import { motion } from 'motion/react';
 import { LAWYER_DATA, OFFICE_LOCATIONS, getWhatsAppLink } from '../data';
+import { CopyButton } from './ui/CopyButton';
+import { interactiveTap, interactiveHover, transitions } from '../lib/motion';
 
 export const Footer: React.FC = () => {
+  const scrollToTop = () => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
   return (
     <footer className="bg-[#02050a] text-white border-t-2 border-[#c5a059]">
       {/* Upper Footer */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-14">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-          
           {/* Col 1: Brand & OAB */}
           <div className="space-y-4">
             <div className="flex items-center space-x-3">
@@ -29,8 +35,11 @@ export const Footer: React.FC = () => {
               {LAWYER_DATA.slogan}. Atuação pautada pela ética, rigor processual e defesa incansável dos direitos de cada constituinte.
             </p>
 
-            <div className="inline-block p-2 border border-[#c5a059]/40 bg-[#050a14] text-[10px] text-[#c5a059] font-mono font-bold tracking-widest">
-              {LAWYER_DATA.oab}
+            <div className="flex items-center gap-2">
+              <div className="p-2 border border-[#c5a059]/40 bg-[#050a14] text-[10px] text-[#c5a059] font-mono font-bold tracking-widest rounded-sm">
+                {LAWYER_DATA.oab}
+              </div>
+              <CopyButton textToCopy={LAWYER_DATA.oab} feedbackText="OAB Copiada" />
             </div>
           </div>
 
@@ -77,7 +86,9 @@ export const Footer: React.FC = () => {
               {OFFICE_LOCATIONS.map((loc) => (
                 <div key={loc.id} className="space-y-1">
                   <p className="font-serif font-bold text-[#c5a059]">{loc.city}</p>
-                  <p className="text-gray-400 text-[11px] leading-tight">{loc.address}, {loc.neighborhood}</p>
+                  <p className="text-gray-400 text-[11px] leading-tight">
+                    {loc.address}, {loc.neighborhood}
+                  </p>
                 </div>
               ))}
             </div>
@@ -85,33 +96,55 @@ export const Footer: React.FC = () => {
 
           {/* Col 4: Contact & Agendamento */}
           <div className="space-y-3">
-            <h4 className="text-xs uppercase tracking-[0.3em] text-[#c5a059] font-bold pb-2 border-b border-[#c5a059]/30">
-              Contato Direto
-            </h4>
+            <div className="flex items-center justify-between pb-2 border-b border-[#c5a059]/30">
+              <h4 className="text-xs uppercase tracking-[0.3em] text-[#c5a059] font-bold">
+                Contato Direto
+              </h4>
+              <motion.button
+                type="button"
+                onClick={scrollToTop}
+                whileHover={{ y: -2 }}
+                whileTap={interactiveTap}
+                className="p-1 text-[#c5a059] hover:text-white border border-[#c5a059]/40 rounded-sm text-[10px] flex items-center gap-1 transition-colors"
+                title="Voltar ao topo"
+              >
+                <ArrowUp className="w-3 h-3" />
+                <span>Topo</span>
+              </motion.button>
+            </div>
+
             <div className="space-y-2 text-xs text-gray-300">
-              <p className="flex items-center gap-2">
-                <Phone className="w-3.5 h-3.5 text-[#c5a059]" />
-                <span className="font-mono text-[11px]">{LAWYER_DATA.phoneFormatted}</span>
-              </p>
-              <p className="flex items-center gap-2">
-                <Mail className="w-3.5 h-3.5 text-[#c5a059]" />
-                <span>{LAWYER_DATA.email}</span>
-              </p>
+              <div className="flex items-center justify-between gap-2">
+                <p className="flex items-center gap-2">
+                  <Phone className="w-3.5 h-3.5 text-[#c5a059]" />
+                  <span className="font-mono text-[11px]">{LAWYER_DATA.phoneFormatted}</span>
+                </p>
+                <CopyButton textToCopy={LAWYER_DATA.phoneRaw} feedbackText="Copiado" />
+              </div>
+
+              <div className="flex items-center justify-between gap-2">
+                <p className="flex items-center gap-2 truncate">
+                  <Mail className="w-3.5 h-3.5 text-[#c5a059] shrink-0" />
+                  <span className="truncate">{LAWYER_DATA.email}</span>
+                </p>
+                <CopyButton textToCopy={LAWYER_DATA.email} feedbackText="Copiado" />
+              </div>
             </div>
 
             <div className="pt-2">
-              <a
+              <motion.a
                 href={getWhatsAppLink()}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="w-full flex items-center justify-center gap-2 py-3 px-4 bg-[#c5a059] hover:bg-[#e6be6a] text-black font-bold text-xs uppercase tracking-widest transition-colors"
+                whileTap={interactiveTap}
+                whileHover={{ y: -1 }}
+                className="w-full flex items-center justify-center gap-2 py-3 px-4 bg-[#c5a059] hover:bg-[#e6be6a] text-black font-bold text-xs uppercase tracking-widest transition-colors rounded-sm shadow-[0_2px_15px_rgba(197,160,89,0.25)]"
               >
                 <MessageCircle className="w-4 h-4 fill-current" />
                 <span>Iniciar Atendimento</span>
-              </a>
+              </motion.a>
             </div>
           </div>
-
         </div>
       </div>
 

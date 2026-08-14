@@ -1,11 +1,24 @@
 import React, { useState, useEffect } from 'react';
-import { Phone, MapPin, Shield, Menu, X, MessageCircle, Clock } from 'lucide-react';
+import { Phone, MapPin, Shield, Menu, X, MessageCircle, Clock, Sparkles } from 'lucide-react';
+import { motion, AnimatePresence, useScroll, useSpring } from 'motion/react';
 import { LAWYER_DATA, getWhatsAppLink } from '../data';
-import { LogoArtDeco } from './LogoArtDeco';
+import { CopyButton } from './ui/CopyButton';
+import { transitions, interactiveTap } from '../lib/motion';
 
-export const Header: React.FC = () => {
+interface HeaderProps {
+  onOpenAssessment?: () => void;
+}
+
+export const Header: React.FC<HeaderProps> = ({ onOpenAssessment }) => {
   const [scrolled, setScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+
+  const { scrollYProgress } = useScroll();
+  const scaleX = useSpring(scrollYProgress, {
+    stiffness: 100,
+    damping: 30,
+    restDelta: 0.001,
+  });
 
   useEffect(() => {
     const handleScroll = () => {
@@ -25,15 +38,26 @@ export const Header: React.FC = () => {
 
   return (
     <header className="sticky top-0 z-50 w-full bg-[#02050a]">
+      {/* Top Global Scroll Progress Bar */}
+      <motion.div
+        className="fixed top-0 left-0 right-0 h-[2.5px] bg-gradient-to-r from-[#c5a059] via-[#e6be6a] to-[#c5a059] origin-left z-50 shadow-[0_0_10px_rgba(197,160,89,0.7)]"
+        style={{ scaleX }}
+      />
+
       {/* Top Sleek Trust Bar */}
       <div className="bg-[#02050a] border-b border-[#c5a059]/40 text-xs py-2 px-4 text-gray-300 hidden md:block">
         <div className="max-w-7xl mx-auto flex justify-between items-center">
           <div className="flex items-center gap-6">
             <div className="flex items-center gap-2">
               <Shield className="w-3.5 h-3.5 text-[#c5a059]" />
-              <span className="font-mono text-[11px] tracking-widest text-[#c5a059] uppercase font-bold">{LAWYER_DATA.oab}</span>
+              <span className="font-mono text-[11px] tracking-widest text-[#c5a059] uppercase font-bold">
+                {LAWYER_DATA.oab}
+              </span>
+              <CopyButton textToCopy={LAWYER_DATA.oab} feedbackText="OAB Copiada" className="py-0.5 px-1.5" />
               <span className="text-[#c5a059]/40">|</span>
-              <span className="text-[11px] tracking-wider text-gray-300 uppercase">Advocacia de Alta Performance</span>
+              <span className="text-[11px] tracking-wider text-gray-300 uppercase">
+                Advocacia de Alta Performance
+              </span>
             </div>
             <div className="flex items-center gap-1.5 text-gray-400 text-[11px]">
               <Clock className="w-3.5 h-3.5 text-[#c5a059]" />
@@ -46,15 +70,18 @@ export const Header: React.FC = () => {
               <MapPin className="w-3.5 h-3.5 text-[#c5a059]" />
               <span>Capão Bonito & Itapetininga - SP</span>
             </div>
-            <a
-              href={getWhatsAppLink()}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="flex items-center gap-1.5 text-[#c5a059] hover:text-[#e6be6a] transition-colors font-mono text-[11px] font-bold tracking-wider"
-            >
-              <Phone className="w-3.5 h-3.5 text-[#c5a059]" />
-              <span>{LAWYER_DATA.phoneFormatted}</span>
-            </a>
+            <div className="flex items-center gap-2">
+              <a
+                href={getWhatsAppLink()}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center gap-1.5 text-[#c5a059] hover:text-[#e6be6a] transition-colors font-mono text-[11px] font-bold tracking-wider"
+              >
+                <Phone className="w-3.5 h-3.5 text-[#c5a059]" />
+                <span>{LAWYER_DATA.phoneFormatted}</span>
+              </a>
+              <CopyButton textToCopy={LAWYER_DATA.phoneRaw} feedbackText="Tel Copiado" className="py-0.5 px-1.5" />
+            </div>
           </div>
         </div>
       </div>
@@ -70,21 +97,25 @@ export const Header: React.FC = () => {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between">
           {/* Sleek Logo */}
           <a href="#" className="flex items-center group">
-            <div className="flex items-center space-x-3">
-              <div className="w-10 h-10 border border-[#c5a059] rounded-full flex items-center justify-center p-0.5">
-                <div className="w-full h-full border border-[#c5a059] rounded-full flex items-center justify-center text-[10px] text-[#c5a059] font-serif font-bold">
+            <motion.div
+              whileHover={{ scale: 1.02 }}
+              transition={transitions.easeFast}
+              className="flex items-center space-x-3"
+            >
+              <div className="w-10 h-10 border border-[#c5a059] rounded-full flex items-center justify-center p-0.5 group-hover:border-[#e6be6a] transition-colors">
+                <div className="w-full h-full border border-[#c5a059] rounded-full flex items-center justify-center text-[10px] text-[#c5a059] font-serif font-bold group-hover:text-[#e6be6a]">
                   AH
                 </div>
               </div>
               <div>
-                <h1 className="text-base sm:text-lg tracking-[0.2em] font-serif uppercase text-[#c5a059] font-bold leading-none">
+                <h1 className="text-base sm:text-lg tracking-[0.2em] font-serif uppercase text-[#c5a059] font-bold leading-none group-hover:text-[#e6be6a] transition-colors">
                   Advocacia Helfstein
                 </h1>
                 <p className="text-[9px] tracking-[0.15em] text-gray-400 uppercase mt-0.5">
                   Dr. Marcelo Vieira Helfstein da Silva
                 </p>
               </div>
-            </div>
+            </motion.div>
           </a>
 
           {/* Desktop Navigation Links */}
@@ -100,22 +131,49 @@ export const Header: React.FC = () => {
             ))}
           </div>
 
-          {/* CTA Button */}
+          {/* CTA Buttons */}
           <div className="hidden sm:flex items-center gap-3">
-            <a
+            {onOpenAssessment && (
+              <motion.button
+                type="button"
+                onClick={onOpenAssessment}
+                whileTap={interactiveTap}
+                whileHover={{ y: -1 }}
+                className="inline-flex items-center gap-1.5 px-3.5 py-2.5 rounded-sm text-xs font-semibold tracking-wider text-[#c5a059] bg-[#0c1424] hover:bg-[#131e33] border border-[#c5a059]/40 hover:border-[#c5a059] transition-all"
+              >
+                <Sparkles className="w-3.5 h-3.5 text-[#c5a059]" />
+                <span>Diagnóstico Rápido</span>
+              </motion.button>
+            )}
+
+            <motion.a
               id="header-whatsapp-cta"
               href={getWhatsAppLink()}
               target="_blank"
               rel="noopener noreferrer"
+              whileTap={interactiveTap}
+              whileHover={{ y: -1 }}
               className="inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-sm text-xs font-bold uppercase tracking-widest text-black bg-[#c5a059] hover:bg-[#e6be6a] transition-all shadow-[0_2px_12px_rgba(197,160,89,0.25)]"
             >
               <MessageCircle className="w-3.5 h-3.5 fill-current" />
               <span>Agendar Consulta</span>
-            </a>
+            </motion.a>
           </div>
 
           {/* Mobile Hamburger Button */}
           <div className="flex lg:hidden items-center gap-2">
+            {onOpenAssessment && (
+              <motion.button
+                type="button"
+                onClick={onOpenAssessment}
+                whileTap={interactiveTap}
+                className="p-2 rounded-sm bg-[#c5a059]/10 text-[#c5a059] border border-[#c5a059]/40"
+                aria-label="Diagnóstico rápido"
+              >
+                <Sparkles className="w-4 h-4" />
+              </motion.button>
+            )}
+
             <a
               href={getWhatsAppLink()}
               target="_blank"
@@ -125,58 +183,90 @@ export const Header: React.FC = () => {
             >
               <MessageCircle className="w-5 h-5" />
             </a>
-            <button
+
+            <motion.button
               id="mobile-menu-toggle"
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+              whileTap={interactiveTap}
               className="p-2.5 rounded-sm bg-[#050a14] border border-[#c5a059]/50 text-[#c5a059] hover:text-white"
               aria-label="Toggle menu"
             >
               {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
-            </button>
+            </motion.button>
           </div>
         </div>
 
-        {/* Mobile Dropdown Menu */}
-        {mobileMenuOpen && (
-          <div className="lg:hidden bg-[#050a14] border-b border-[#c5a059] px-5 py-6 space-y-4 animate-in slide-in-from-top-4 duration-200">
-            <div className="space-y-3">
-              {navLinks.map((link) => (
-                <a
-                  key={link.href}
-                  href={link.href}
+        {/* Mobile Dropdown Menu with Motion AnimatePresence */}
+        <AnimatePresence>
+          {mobileMenuOpen && (
+            <motion.div
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: 'auto' }}
+              exit={{ opacity: 0, height: 0 }}
+              transition={transitions.easeFast}
+              className="lg:hidden bg-[#050a14] border-b border-[#c5a059] px-5 py-6 space-y-4 overflow-hidden"
+            >
+              <div className="space-y-3">
+                {navLinks.map((link, idx) => (
+                  <motion.a
+                    key={link.href}
+                    href={link.href}
+                    onClick={() => setMobileMenuOpen(false)}
+                    initial={{ opacity: 0, x: -10 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: idx * 0.04, duration: 0.2 }}
+                    className="block text-xs uppercase tracking-[0.2em] font-semibold text-gray-200 hover:text-[#c5a059] py-2 border-b border-[#c5a059]/20"
+                  >
+                    {link.label}
+                  </motion.a>
+                ))}
+              </div>
+
+              <div className="pt-2 space-y-2">
+                {onOpenAssessment && (
+                  <motion.button
+                    type="button"
+                    onClick={() => {
+                      setMobileMenuOpen(false);
+                      onOpenAssessment();
+                    }}
+                    whileTap={interactiveTap}
+                    className="w-full flex items-center justify-center gap-2 py-3 px-4 rounded-sm font-semibold text-xs uppercase tracking-widest text-[#c5a059] bg-[#0c1424] border border-[#c5a059] text-center"
+                  >
+                    <Sparkles className="w-4 h-4 text-[#c5a059]" />
+                    <span>Fazer Diagnóstico do Caso</span>
+                  </motion.button>
+                )}
+
+                <motion.a
+                  href={getWhatsAppLink()}
+                  target="_blank"
+                  rel="noopener noreferrer"
                   onClick={() => setMobileMenuOpen(false)}
-                  className="block text-xs uppercase tracking-[0.2em] font-semibold text-gray-200 hover:text-[#c5a059] py-2 border-b border-[#c5a059]/20"
+                  whileTap={interactiveTap}
+                  className="w-full flex items-center justify-center gap-2 py-3 px-4 rounded-sm font-bold text-xs uppercase tracking-widest text-black bg-[#c5a059] hover:bg-[#e6be6a] shadow-lg text-center"
                 >
-                  {link.label}
-                </a>
-              ))}
-            </div>
+                  <MessageCircle className="w-4 h-4 fill-current" />
+                  <span>Agendar Consulta no WhatsApp</span>
+                </motion.a>
+              </div>
 
-            <div className="pt-2">
-              <a
-                href={getWhatsAppLink()}
-                target="_blank"
-                rel="noopener noreferrer"
-                onClick={() => setMobileMenuOpen(false)}
-                className="w-full flex items-center justify-center gap-2 py-3 px-4 rounded-sm font-bold text-xs uppercase tracking-widest text-black bg-[#c5a059] hover:bg-[#e6be6a] shadow-lg text-center"
-              >
-                <MessageCircle className="w-4 h-4 fill-current" />
-                <span>Agendar Consulta no WhatsApp</span>
-              </a>
-            </div>
-
-            <div className="pt-3 text-[10px] tracking-widest text-gray-400 uppercase space-y-1">
-              <p className="flex items-center gap-1.5 text-[#c5a059]">
-                <Shield className="w-3.5 h-3.5 text-[#c5a059]" />
-                <span>{LAWYER_DATA.oab}</span>
-              </p>
-              <p className="flex items-center gap-1.5">
-                <MapPin className="w-3.5 h-3.5 text-[#c5a059]" />
-                <span>Capão Bonito & Itapetininga - SP</span>
-              </p>
-            </div>
-          </div>
-        )}
+              <div className="pt-3 text-[10px] tracking-widest text-gray-400 uppercase space-y-1">
+                <div className="flex items-center justify-between text-[#c5a059]">
+                  <p className="flex items-center gap-1.5">
+                    <Shield className="w-3.5 h-3.5 text-[#c5a059]" />
+                    <span>{LAWYER_DATA.oab}</span>
+                  </p>
+                  <CopyButton textToCopy={LAWYER_DATA.oab} feedbackText="Copiado" />
+                </div>
+                <p className="flex items-center gap-1.5">
+                  <MapPin className="w-3.5 h-3.5 text-[#c5a059]" />
+                  <span>Capão Bonito & Itapetininga - SP</span>
+                </p>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </nav>
     </header>
   );
