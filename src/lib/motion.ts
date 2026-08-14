@@ -120,5 +120,5 @@ export const interactiveTap = {
 
 export const interactiveHover = {
   y: -2,
-  transition: { duration: 0.15, ease: 'easeOut' },
+  transition: { duration: 0.15, ease: 'easeOut' as const },
 };

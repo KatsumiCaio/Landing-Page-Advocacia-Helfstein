@@ -5,7 +5,11 @@ import { LAWYER_DATA, OFFICE_LOCATIONS, getWhatsAppLink } from '../data';
 import { CopyButton } from './ui/CopyButton';
 import { interactiveTap, interactiveHover, transitions } from '../lib/motion';
 
-export const Footer: React.FC = () => {
+interface FooterProps {
+  onOpenLegal?: (tab: 'termos' | 'privacidade') => void;
+}
+
+export const Footer: React.FC<FooterProps> = ({ onOpenLegal }) => {
   const scrollToTop = () => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
@@ -150,12 +154,39 @@ export const Footer: React.FC = () => {
 
       {/* Bottom Legal Bar */}
       <div className="border-t border-[#c5a059]/30 bg-[#050a14] py-6 px-4 text-center text-xs text-gray-400">
-        <div className="max-w-7xl mx-auto space-y-2">
+        <div className="max-w-7xl mx-auto space-y-3">
           <p className="text-[11px] leading-relaxed max-w-3xl mx-auto">
             Este site tem caráter meramente informativo e educacional, em estrita conformidade com o Código de Ética e Disciplina da OAB (Ordem dos Advogados do Brasil) e o Provimento nº 205/2021 do CFOAB.
           </p>
-          <p className="text-[10px] uppercase tracking-widest text-[#c5a059]">
-            © {new Date().getFullYear()} Advocacia Helfstein • Dr. Marcelo Vieira Helfstein da Silva ({LAWYER_DATA.oab}). Todos os direitos reservados.
+
+          <div className="flex flex-wrap items-center justify-center gap-4 text-[11px] text-gray-300">
+            {onOpenLegal && (
+              <>
+                <button
+                  type="button"
+                  onClick={() => onOpenLegal('privacidade')}
+                  className="text-gray-300 hover:text-[#c5a059] underline underline-offset-4 transition-colors"
+                >
+                  Política de Privacidade & LGPD
+                </button>
+                <span className="text-[#c5a059]/40">•</span>
+                <button
+                  type="button"
+                  onClick={() => onOpenLegal('termos')}
+                  className="text-gray-300 hover:text-[#c5a059] underline underline-offset-4 transition-colors"
+                >
+                  Termos de Uso
+                </button>
+                <span className="text-[#c5a059]/40">•</span>
+              </>
+            )}
+            <span className="text-[#c5a059]">
+              Advogado Responsável: Dr. Marcelo Vieira Helfstein da Silva ({LAWYER_DATA.oab})
+            </span>
+          </div>
+
+          <p className="text-[10px] uppercase tracking-widest text-[#c5a059]/80">
+            © {new Date().getFullYear()} Advocacia Helfstein. Todos os direitos reservados.
           </p>
         </div>
       </div>

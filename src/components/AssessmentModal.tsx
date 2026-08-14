@@ -1,19 +1,23 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { X, Check, ArrowRight, ArrowLeft, MessageCircle, ShieldCheck, Scale, Clock, Sparkles, Loader2 } from 'lucide-react';
+import { X, Check, ArrowRight, ArrowLeft, MessageCircle, ShieldCheck, Scale, Clock, Sparkles, Loader2, AlertCircle } from 'lucide-react';
 import { LAWYER_DATA, PRACTICE_AREAS, getWhatsAppLink } from '../data';
 import { transitions, interactiveTap, modalBackdropVariants, scaleUpVariants } from '../lib/motion';
+import { rateLimiter, sanitizeInput } from '../lib/security';
+import { observability } from '../lib/observability';
 
 interface AssessmentModalProps {
   isOpen: boolean;
   onClose: () => void;
   initialAreaId?: string;
+  onOpenLegal?: (tab: 'termos' | 'privacidade') => void;
 }
 
 export const AssessmentModal: React.FC<AssessmentModalProps> = ({
   isOpen,
   onClose,
   initialAreaId,
+  onOpenLegal,
 }) => {
   const [step, setStep] = useState(1);
   const [selectedArea, setSelectedArea] = useState<string>(initialAreaId || 'civil-contratos');
@@ -21,6 +25,8 @@ export const AssessmentModal: React.FC<AssessmentModalProps> = ({
   const [locationPref, setLocationPref] = useState<string>('Online / WhatsApp');
   const [clientName, setClientName] = useState('');
   const [briefSummary, setBriefSummary] = useState('');
+  const [agreedLgpd, setAgreedLgpd] = useState(true);
+  const [rateLimitError, setRateLimitError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const totalSteps = 4;
@@ -42,6 +48,11 @@ export const AssessmentModal: React.FC<AssessmentModalProps> = ({
   const currentAreaObj = PRACTICE_AREAS.find((a) => a.id === selectedArea) || PRACTICE_AREAS[0];
 
   const handleNext = () => {
+    observability.trackEvent({
+      name: 'assessment_step_next',
+      category: 'interaction',
+      properties: { fromStep: step, area: selectedArea },
+    });
     if (step < totalSteps) {
       setStep((prev) => prev + 1);
     }
@@ -55,15 +66,39 @@ export const AssessmentModal: React.FC<AssessmentModalProps> = ({
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    setRateLimitError(null);
+
+    // Rate Limiting Security Check
+    const rateCheck = rateLimiter.checkLimit('assessment_submission', { maxAttempts: 4, windowMs: 60000 });
+    if (!rateCheck.allowed) {
+      const waitSec = Math.ceil((rateCheck.retryAfterMs || 1000) / 1000);
+      setRateLimitError(`Por segurança, aguarde ${waitSec}s antes de enviar nova solicitação.`);
+      return;
+    }
+
+    const cleanName = sanitizeInput(clientName) || 'Cliente';
+    const cleanSummary = sanitizeInput(briefSummary);
+
     setIsSubmitting(true);
+
+    observability.trackEvent({
+      name: 'assessment_completed',
+      category: 'conversion',
+      properties: {
+        area: currentAreaObj.title,
+        urgency,
+        locationPref,
+        hasSummary: Boolean(cleanSummary),
+      },
+    });
 
     const message = `*SOLICITAÇÃO DE CONSULTA - ADVOCACIA HELFSTEIN*
 ----------------------------------
-*Cliente:* ${clientName || 'Cliente'}
+*Cliente:* ${cleanName}
 *Área Jurídica:* ${currentAreaObj.title}
 *Situação:* ${urgency}
 *Preferência de Atendimento:* ${locationPref}
-${briefSummary ? `*Resumo do Caso:* ${briefSummary}` : ''}
+${cleanSummary ? `*Resumo do Caso:* ${cleanSummary}` : ''}
 ----------------------------------
 Olá Dr. Marcelo, preenchi o diagnóstico no site e gostaria de agendar meu atendimento.`;
 
@@ -342,6 +377,44 @@ Olá Dr. Marcelo, preenchi o diagnóstico no site e gostaria de agendar meu aten
                       />
                     </div>
 
+                    {/* LGPD Consent */}
+                    <div className="pt-1">
+                      <label className="flex items-start gap-2.5 text-[11px] text-gray-300 cursor-pointer select-none">
+                        <input
+                          type="checkbox"
+                          checked={agreedLgpd}
+                          onChange={(e) => setAgreedLgpd(e.target.checked)}
+                          className="mt-0.5 rounded border-[#c5a059] text-[#c5a059] focus:ring-[#c5a059] bg-[#02050a]"
+                        />
+                        <span>
+                          Concordo com o tratamento dos meus dados para este contato, conforme a{' '}
+                          {onOpenLegal ? (
+                            <button
+                              type="button"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                onOpenLegal('privacidade');
+                              }}
+                              className="text-[#c5a059] underline hover:text-[#e6be6a]"
+                            >
+                              Política de Privacidade (LGPD)
+                            </button>
+                          ) : (
+                            <span className="text-[#c5a059]">Política de Privacidade (LGPD)</span>
+                          )}
+                          .
+                        </span>
+                      </label>
+                    </div>
+
+                    {/* Rate Limit Alert if any */}
+                    {rateLimitError && (
+                      <div className="p-3 bg-red-950/60 border border-red-500/50 rounded-sm text-xs text-red-200 flex items-center gap-2">
+                        <AlertCircle className="w-4 h-4 text-red-400 shrink-0" />
+                        <span>{rateLimitError}</span>
+                      </div>
+                    )}
+
                     {/* Summary pill */}
                     <div className="p-3 bg-[#02050a] border border-[#c5a059]/30 rounded-sm text-[11px] text-gray-300 space-y-1">
                       <p>
@@ -389,7 +462,7 @@ Olá Dr. Marcelo, preenchi o diagnóstico no site e gostaria de agendar meu aten
               <motion.button
                 type="button"
                 onClick={handleSubmit}
-                disabled={isSubmitting || !clientName.trim()}
+                disabled={isSubmitting || !clientName.trim() || !agreedLgpd}
                 whileTap={interactiveTap}
                 className="inline-flex items-center gap-2 px-6 py-2.5 bg-[#c5a059] hover:bg-[#e6be6a] disabled:opacity-50 text-black font-bold text-xs uppercase tracking-widest rounded-sm transition-all shadow-[0_2px_15px_rgba(197,160,89,0.3)]"
               >

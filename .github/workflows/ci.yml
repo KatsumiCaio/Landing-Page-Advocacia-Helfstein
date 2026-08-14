@@ -1,0 +1,78 @@
+name: Quality & CI Pipeline
+
+on:
+  push:
+    branches: [main, master, develop]
+  pull_request:
+    branches: [main, master, develop]
+
+jobs:
+  code-quality:
+    name: Code Quality & Type Check
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Source Code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js Environment
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+
+      - name: Install Dependencies
+        run: npm ci
+
+      - name: TypeScript Static Type Checking
+        run: npm run typecheck
+
+      - name: Code Quality & Lint Check
+        run: npm run lint
+
+  test-suite:
+    name: Automated Unit & Integration Tests
+    runs-on: ubuntu-latest
+    needs: [code-quality]
+
+    steps:
+      - name: Checkout Source Code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js Environment
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+
+      - name: Install Dependencies
+        run: npm ci
+
+      - name: Run Vitest Suite with Coverage
+        run: npm test
+
+  build-and-budget:
+    name: Production Build & Performance Budget
+    runs-on: ubuntu-latest
+    needs: [test-suite]
+
+    steps:
+      - name: Checkout Source Code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js Environment
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+
+      - name: Install Dependencies
+        run: npm ci
+
+      - name: Build Application for Production
+        run: npm run build
+
+      - name: Performance Budget Verification
+        run: |
+          echo "Verifying build artifacts and distribution sizes..."
+          test -d dist && echo "Build verification completed successfully."

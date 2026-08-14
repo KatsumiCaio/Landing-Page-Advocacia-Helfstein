@@ -21,7 +21,7 @@ export const CopyButton: React.FC<CopyButtonProps> = ({
   const handleCopy = async (e: React.MouseEvent) => {
     e.stopPropagation();
     try {
-      if (navigator.clipboard && window.isSecureContext) {
+      if (navigator.clipboard && navigator.clipboard.writeText) {
         await navigator.clipboard.writeText(textToCopy);
       } else {
         const textArea = document.createElement('textarea');
